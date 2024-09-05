@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מיני ביוגרפיה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .row input, .row select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results {
+            margin-top: 20px;
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+        }
+        .copy-btn {
+            display: none;
+            margin-top: 10px;
+            background-color: #2196F3;
+        }
+        .copy-btn:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>יצירת מיני ביוגרפיה</h1>
+
+    <div id="rows-container">
+        <!-- כאן יתווספו השורות -->
+        <div class="row">
+            <input type="date" class="date">
+            <select class="action">
+                <option value="עליה">עליה</option>
+                <option value="ירידה">ירידה</option>
+            </select>
+            <select class="role">
+                <option value="צוות">צוות</option>
+                <option value="ניהול">ניהול</option>
+                <option value="פיקוח">פיקוח</option>
+            </select>
+            <input type="text" class="details" placeholder="שם הצוות/ פורום/ קטגורייה">
+        </div>
+    </div>
+
+    <button onclick="addRow()">הוסף שורה</button>
+    <button onclick="generateResults()">צור ביוגרפיה</button>
+    <button class="copy-btn" id="copy-btn" onclick="copyText()">העתק תוצאות</button>
+
+    <h2>תוצאות:</h2>
+    <div id="results"></div>
+</div>
+
+<script>
+    // פונקציה להוספת שורה חדשה
+    function addRow() {
+        const container = document.getElementById("rows-container");
+        const newRow = document.createElement("div");
+        newRow.classList.add("row");
+        newRow.innerHTML = `
+            <input type="date" class="date">
+            <select class="action">
+                <option value="עליה">עליה</option>
+                <option value="ירידה">ירידה</option>
+            </select>
+            <select class="role">
+                <option value="צוות">צוות</option>
+                <option value="ניהול">ניהול</option>
+                <option value="פיקוח">פיקוח</option>
+            </select>
+            <input type="text" class="details" placeholder="שם הצוות/ פורום/ קטגורייה">
+        `;
+        container.appendChild(newRow);
+    }
+
+    // פונקציה לעיצוב תאריך בפורמט DD/MM/YYYY
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // החודשים מתחילים מ-0
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // פונקציה למיון השורות לפי תאריך
+    function sortRowsByDate(rows) {
+        return Array.from(rows).sort((a, b) => {
+            const dateA = new Date(a.querySelector(".date").value);
+            const dateB = new Date(b.querySelector(".date").value);
+            return dateA - dateB; // מיון לפי תאריך (בסדר עולה)
+        });
+    }
+
+    // פונקציה ליצירת תוצאות מהשורות
+    function generateResults() {
+        const rows = document.querySelectorAll(".row");
+        const sortedRows = sortRowsByDate(rows); // מיון השורות לפי תאריך
+        const resultsContainer = document.getElementById("results");
+        resultsContainer.innerHTML = ''; // איפוס התוצאות הקודמות
+
+        sortedRows.forEach(row => {
+            const date = row.querySelector(".date").value;
+            const action = row.querySelector(".action").value;
+            const role = row.querySelector(".role").value;
+            const details = row.querySelector(".details").value;
+
+            if (!date || !details) {
+                alert("נא למלא את כל השדות");
+                return;
+            }
+
+            const formattedDate = formatDate(date);
+            let additionalText = "";
+
+            // תנאים לתפקידים שונים
+            if (role === "ניהול") {
+                additionalText = `פורום ${details}`;
+            } else if (role === "פיקוח") {
+                additionalText = `קטגוריית ${details}`;
+            } else {
+                additionalText = details; // לא יופיע טקסט נוסף אם התפקיד הוא "צוות"
+            }
+
+            // שינוי בהתאם לפעולה: אם זה "עליה" - "ל", אם זה "ירידה" - "מ"
+            const actionPreposition = action === "עליה" ? "ל" : "מ";
+
+            // יצירת התוצאה
+            const resultText = `${formattedDate} - ${action} ${actionPreposition}${role} ${additionalText}`;
+            const resultElement = document.createElement("p");
+            resultElement.innerText = resultText;
+            resultsContainer.appendChild(resultElement);
+        });
+
+        // הצגת כפתור ההעתקה לאחר יצירת התוצאות
+        document.getElementById("copy-btn").style.display = 'inline-block';
+    }
+
+    // פונקציה להעתקת הטקסט
+    function copyText() {
+        const resultsContainer = document.getElementById("results");
+        const range = document.createRange();
+        range.selectNode(resultsContainer);
+        window.getSelection().removeAllRanges(); // איפוס בחירות קודמות
+        window.getSelection().addRange(range); // בחירת הטקסט להעתקה
+        document.execCommand('copy'); // ביצוע הפקודה להעתקה
+        window.getSelection().removeAllRanges(); // איפוס הבחירה לאחר ההעתקה
+
+        alert("הטקסט הועתק");
+    }
+</script>
+
+</body>
+</html>
